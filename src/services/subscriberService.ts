@@ -1,3 +1,4 @@
+/* eslint-disable node/no-extraneous-import */
 import {Header} from '@polkadot/types/interfaces';
 import NodeStatusService from '../services/nodeStatusService';
 import EventService, {EventDetails} from './eventService';
@@ -5,9 +6,13 @@ import SlotService from './slotService';
 import EraService from './eraService';
 import ChainService, {BlockWithEvent} from './chainService';
 import {ApiPromise} from '@polkadot/api';
-import {parseObj} from "../util";
-import {logger} from "../log";
-import {EventRecord, DispatchError, Extrinsic} from '@polkadot/types/interfaces';
+import {parseObj} from '../util';
+import {logger} from '../log';
+import {
+  EventRecord,
+  DispatchError,
+  Extrinsic,
+} from '@polkadot/types/interfaces';
 import {ITuple} from '@polkadot/types/types';
 
 export default class SubscriberService {
@@ -22,9 +27,7 @@ export default class SubscriberService {
     this.chainService = new ChainService(api);
     this.nodeStatusService = new NodeStatusService(this.chainService);
     this.slotService = new SlotService(this.nodeStatusService);
-    this.eraService = new EraService(
-      this.nodeStatusService
-    );
+    this.eraService = new EraService(this.nodeStatusService);
     this.eventService = new EventService();
     this.currentBN = 0;
   }
@@ -33,7 +36,9 @@ export default class SubscriberService {
     const blockWithEvent = async (b: Header) => {
       if (this.currentBN < b.number.toNumber()) {
         this.currentBN = b.number.toNumber();
-        const blockWithEvents = await this.chainService.blockWithEvent(this.currentBN);
+        const blockWithEvents = await this.chainService.blockWithEvent(
+          this.currentBN
+        );
         const eventDetails = await this.parseBlock(blockWithEvents);
         for (const eventDetail of eventDetails) {
           await this.eventService.eventHandler(eventDetail);
@@ -51,7 +56,7 @@ export default class SubscriberService {
   async parseBlock(blockWithEvent: BlockWithEvent): Promise<EventDetails[]> {
     const txs: Extrinsic[] = blockWithEvent?.block?.block?.extrinsics;
     const reportedSlot = parseObj(
-        await this.chainService.api.query.swork.currentReportSlot()
+      await this.chainService.api.query.swork.currentReportSlot()
     );
     const blockNumber = parseObj(blockWithEvent.block.block.header.number);
     const resEvents: EventRecord[] = blockWithEvent.events;
@@ -66,16 +71,16 @@ export default class SubscriberService {
       const method = JSON.stringify(ex.method);
       const usedMethod = ex.method.methodName;
       const section = ex.method.sectionName;
-      let callIndex = `${section}.${usedMethod}`;
+      const callIndex = `${section}.${usedMethod}`;
       if ('swork.reportWorks' === callIndex) {
         const data = JSON.parse(method).args;
         if (data) {
           const reportedSlot = data.slot;
           for (const eventDetail of result) {
             const eventData = parseObj(eventDetail.event.data);
-            if (eventData[1] == data.curr_pk) {
-              logger.info(`replace correct slot ${reportedSlot}`)
-              eventDetail.reportSlot = reportedSlot
+            if (eventData[1] === data.curr_pk) {
+              logger.info(`replace correct slot ${reportedSlot}`);
+              eventDetail.reportSlot = reportedSlot;
             }
           }
         }
@@ -85,22 +90,22 @@ export default class SubscriberService {
   }
 
   private parseEvent(
-      param: EventRecord,
-      blockNumber: number,
-      reportedSlot: number
+    param: EventRecord,
+    blockNumber: number,
+    reportedSlot: number
   ) {
     let message = param.event.meta.name.toString();
     let details = param?.event?.meta?.documentation?.join('');
     let index = blockNumber + '-';
     if (param.event.method === 'ExtrinsicFailed') {
       const [dispatchError] = (param.event.data as unknown) as ITuple<
-          [DispatchError]
-          >;
+        [DispatchError]
+      >;
       if (dispatchError.isModule) {
         try {
           const mod = dispatchError.asModule;
           const error = this.chainService.api.registry.findMetaError(
-              new Uint8Array([mod.index.toNumber(), mod.error.toNumber()])
+            new Uint8Array([mod.index.toNumber(), mod.error.toNumber()])
           );
           message = `${error.section}.${error.name}`;
           details = error.documentation.join('');

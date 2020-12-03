@@ -46,7 +46,7 @@ export const updateFlags = async (
     {
       $set: {
         countedEras: countedEras,
-        latestEra
+        latestEra,
       },
     },
     (err: any, doc: any) => {
@@ -143,7 +143,10 @@ export const totalNodeCount = async () => {
   return Points.find().count();
 };
 
-export const savePubKeyReportStatus = async (pubKey: string, currentSlot: number) => {
+export const savePubKeyReportStatus = async (
+  pubKey: string,
+  currentSlot: number
+) => {
   const pubKeyStatus = await reportedStatusFindOne(pubKey);
   if (!pubKeyStatus) {
     const pubKeyReport = new ReportedStatus({
@@ -235,28 +238,37 @@ export const reportedStatusFindOne = async (pubKey: string) => {
   }).exec();
 };
 
-export const updateStatusAndEffectiveSlot = async (id: any, reportedCount: number, reportedSlot: number, effectiveSlot: number) => {
+export const updateStatusAndEffectiveSlot = async (
+  id: any,
+  reportedCount: number,
+  reportedSlot: number,
+  effectiveSlot: number
+) => {
   await ReportedStatus.updateOne(
-      {_id: id},
-      {
-        $set: {
-          reportedCount,
-          reportedSlot,
-          effectiveSlot
-        },
+    {_id: id},
+    {
+      $set: {
+        reportedCount,
+        reportedSlot,
+        effectiveSlot,
       },
-      (err: any, doc: any) => {
-        if (err) {
-          logger.error(
-              `update pubKey report status and effectiveSlot error, ${JSON.stringify(err)}`
-          );
-        }
-        logger.info(
-            `update pubKey report status and effectiveSlot  success, ${JSON.stringify(doc)}`
+    },
+    (err: any, doc: any) => {
+      if (err) {
+        logger.error(
+          `update pubKey report status and effectiveSlot error, ${JSON.stringify(
+            err
+          )}`
         );
       }
+      logger.info(
+        `update pubKey report status and effectiveSlot  success, ${JSON.stringify(
+          doc
+        )}`
+      );
+    }
   );
-}
+};
 
 export const saveIdBond = async (stashId: string, pubKey: string) => {
   const idBond = await idBondFindOne(stashId, pubKey);
@@ -470,7 +482,11 @@ export const rewardSave = async (cycleIndex: number, rewardRecord: any) => {
   reward.save();
 };
 
-export const flagsClear = async (id: any, erasCycle: number, currentEra: number) => {
+export const flagsClear = async (
+  id: any,
+  erasCycle: number,
+  currentEra: number
+) => {
   await Flags.updateOne(
     {
       _id: id,
@@ -478,23 +494,27 @@ export const flagsClear = async (id: any, erasCycle: number, currentEra: number)
     {
       erasCycle,
       countedEras: 0,
-      latestEra: currentEra
+      latestEra: currentEra,
     }
   ).exec();
 };
 
 export const updateUnReportedPubKey = async (pubKeys: []) => {
   await ReportedStatus.updateMany(
-      { pubKey: { $nin: pubKeys } },
-      { reportedCount: 0 },
-      (err: string, res: any) => {
-        if (err) {
-          logger.info(`update reportedStatus UnReportedPubKey Error: ${JSON.stringify(err)}`);
-        } else {
-          logger.info(
-              `update reportedStatus UnReportedPubKey success ${JSON.stringify(res)}`
-          );
-        }
+    {pubKey: {$nin: pubKeys}},
+    {reportedCount: 0},
+    (err: string, res: any) => {
+      if (err) {
+        logger.info(
+          `update reportedStatus UnReportedPubKey Error: ${JSON.stringify(err)}`
+        );
+      } else {
+        logger.info(
+          `update reportedStatus UnReportedPubKey success ${JSON.stringify(
+            res
+          )}`
+        );
       }
+    }
   );
-}
+};

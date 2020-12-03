@@ -16,7 +16,10 @@ export const logger = createLogger({
     // - Write all logs error (and below) to `crust-api-error.log`.
     //
     new transports.Console(),
-    new transports.File({filename: 'logs/ark-backend-error.log', level: 'error'}),
+    new transports.File({
+      filename: 'logs/ark-backend-error.log',
+      level: 'error',
+    }),
     new transports.File({filename: 'logs/ark-backend-combined.log'}),
   ],
 });

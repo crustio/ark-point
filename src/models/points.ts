@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 
 // [RESULT] points schema
 const points = new Schema({
-  accountId: {type: String, index: true, unique:true},
+  accountId: {type: String, index: true, unique: true},
   // latest calculate slot
   reportSlot: Number,
   totalCapacity: Number,

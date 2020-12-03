@@ -11,34 +11,34 @@ const port = argv[2] || 3000;
 let subscriberService: SubscriberService;
 
 const subscribeHead = () => {
-    let api = getApi();
-    subscriberService = new SubscriberService(api);
-    subscriberService
-        .subscribeNewBlock()
-        .then(e => logger.info(`Start the application normally`))
-        .catch(error => {
-            logger.error(`💥  Caught some error: ${error.toString()}`);
-            throw error;
-        });
+  const api = getApi();
+  subscriberService = new SubscriberService(api);
+  subscriberService
+    .subscribeNewBlock()
+    .then(e => logger.info('Start the application normally'))
+    .catch(error => {
+      logger.error(`💥  Caught some error: ${error.toString()}`);
+      throw error;
+    });
 
-    api.on("disconnected", () => {
-        logger.error(`☄️ [global] api on disconnected exception`)
-        initApi();
-        subscribeHead();
-    })
-}
-
-const errorHandler = (
-    err: any,
-    _req: Request | null,
-    res: Response | null,
-    _next: any
-) => {
-    const errMsg: string = '' + err ? err.message : 'Unknown error';
-    logger.error(`☄️ [global]: Error catched: ${errMsg}.`);
+  api.on('disconnected', () => {
+    logger.error('☄️ [global] api on disconnected exception');
     initApi();
     subscribeHead();
-    logger.warn('📡 [global]: Connection reinitialized.');
+  });
+};
+
+const errorHandler = (
+  err: any,
+  _req: Request | null,
+  res: Response | null,
+  _next: any
+) => {
+  const errMsg: string = '' + err ? err.message : 'Unknown error';
+  logger.error(`☄️ [global]: Error catched: ${errMsg}.`);
+  initApi();
+  subscribeHead();
+  logger.warn('📡 [global]: Connection reinitialized.');
 };
 
 subscribeHead();
@@ -50,6 +50,5 @@ app.listen(port, () => {
 // Error handler
 app.use(errorHandler);
 process.on('uncaughtException', (err: Error) => {
-    logger.error(`☄️ [global] Uncaught exception ${err.message}`);
+  logger.error(`☄️ [global] Uncaught exception ${err.message}`);
 });
-

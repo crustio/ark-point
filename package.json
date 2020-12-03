@@ -11,9 +11,12 @@
     "start": "node build/src/index.js",
     "lint": "gts lint",
     "clean": "gts clean",
-    "fix": "gts fix"
+    "fix": "gts fix",
+    "compile": "tsc",
+    "prepare": "yarn run compile",
+    "pretest": "yarn run compile",
+    "posttest": "yarn run lint"
   },
-  "license": "GPL-3.0",
   "dependencies": {
     "@polkadot/api": "^2.7.1",
     "express": "^4.17.1",

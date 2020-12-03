@@ -1,12 +1,11 @@
 import {logger} from '../log';
 
 const mongoose = require('mongoose');
-let DB_URL: string;
 
 /**
  *  connect
  */
-DB_URL = 'mongodb://xxx';
+const DB_URL = 'mongodb://xxx';
 
 mongoose.connect(DB_URL, {
   poolSize: 10,

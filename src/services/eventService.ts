@@ -15,9 +15,7 @@ export interface EventDetails {
 }
 
 export default class EventService {
-
   async eventHandler(event: EventDetails) {
     db.saveEvent(parseObj(event));
   }
-
 }

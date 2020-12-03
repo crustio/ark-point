@@ -31,9 +31,9 @@ export default class NodeStatusService {
         if (validators.indexOf(minerInDb.accountId) !== -1) {
           if (currentEra > minerInDb.latestEra) {
             await db.ValidatorOnlineStatusUpdateOne(
-                minerInDb._id,
-                minerInDb.beValidatorEras + 1,
-                currentEra
+              minerInDb._id,
+              minerInDb.beValidatorEras + 1,
+              currentEra
             );
           }
         }
@@ -64,9 +64,9 @@ export default class NodeStatusService {
     const onlineV = await db.validatorOnlineStatusFindOne(accountId);
     if (onlineV) {
       await db.offlineStatusEraPlus(
-          onlineV._id,
-          onlineV.offlineEras + 1,
-          currentEra
+        onlineV._id,
+        onlineV.offlineEras + 1,
+        currentEra
       );
     }
   }
@@ -77,7 +77,11 @@ export default class NodeStatusService {
    * @param controllerId
    * @param pubKey
    */
-  async addAccountIdBondAndPubKeyReport(controllerId: string, pubKey: string, currentSlot: number) {
+  async addAccountIdBondAndPubKeyReport(
+    controllerId: string,
+    pubKey: string,
+    currentSlot: number
+  ) {
     const ledger = parseObj(await this.chainService.ledger(controllerId));
     if (ledger) {
       await db.saveIdBond(ledger.stash, pubKey);
@@ -87,18 +91,21 @@ export default class NodeStatusService {
 
   public reportStatusUpdateMany = async (currentSlot: number) => {
     const pubKeyReports = await db.historyPubKeyReports(currentSlot);
-    const reportedPubKeys = pubKeyReports.map((pk: { _id: any; }) => pk._id);
+    const reportedPubKeys = pubKeyReports.map((pk: {_id: any}) => pk._id);
     await db.updateUnReportedPubKey(reportedPubKeys);
     for (const pubKeyReport of pubKeyReports) {
       const dbReportStatus = await db.reportedStatusFindOne(pubKeyReport._id);
       if (dbReportStatus) {
-        if (dbReportStatus.reportedCount == 0 && pubKeyReport.reportCount > 0) {
+        if (
+          dbReportStatus.reportedCount === 0 &&
+          pubKeyReport.reportCount > 0
+        ) {
           await db.updateStatusAndEffectiveSlot(
-              dbReportStatus._id,
-              pubKeyReport.reportCount,
-              preSlot(currentSlot),
-              preSlot(currentSlot)
-          )
+            dbReportStatus._id,
+            pubKeyReport.reportCount,
+            preSlot(currentSlot),
+            preSlot(currentSlot)
+          );
         } else {
           await db.reportedStatusUpdate(
             dbReportStatus._id,
@@ -133,50 +140,57 @@ export default class NodeStatusService {
       }).exec();
       for (const accountPubKey of accountPubKeys) {
         const pubKeyWorkReport = await db.reportedStatusByPubKey(
-            accountPubKey.pubKey
+          accountPubKey.pubKey
         );
         if (pubKeyWorkReport && pubKeyWorkReport.reportedCount > 0) {
           realPubKeyCount++;
-          const totalReportedSlotsBN = !pubKeyWorkReport.endedSlot ? Math.max(pubKeyWorkReport.reportedSlot -
-              pubKeyWorkReport.effectiveSlot, 0) : Math.max(pubKeyWorkReport.endedSlot -
-              pubKeyWorkReport.effectiveSlot, 0);
+          const totalReportedSlotsBN = !pubKeyWorkReport.endedSlot
+            ? Math.max(
+                pubKeyWorkReport.reportedSlot - pubKeyWorkReport.effectiveSlot,
+                0
+              )
+            : Math.max(
+                pubKeyWorkReport.endedSlot - pubKeyWorkReport.effectiveSlot,
+                0
+              );
           const totalReportCount = totalReportedSlotsBN / 300 + 1;
           totalReportRate += this.getPercent(
-              pubKeyWorkReport.reportedCount,
-              totalReportCount
+            pubKeyWorkReport.reportedCount,
+            totalReportCount
           );
         }
       }
-      const reportRate = Math.min(1, this.getPercent(totalReportRate, realPubKeyCount));
+      const reportRate = Math.min(
+        1,
+        this.getPercent(totalReportRate, realPubKeyCount)
+      );
       const reportMultiplier = this.getReportMultiplier(reportRate);
 
       // 2. Calculate `storage_capacity`
       let stakeLimit: any;
       const controller = parseObj(await this.chainService.bonded(stash));
       if (controller) {
-        stakeLimit = (await this.chainService.stakeLimit(
-            stash
-        )).toString();
+        stakeLimit = (await this.chainService.stakeLimit(stash)).toString();
       } else {
         stakeLimit = 0;
       }
       const totalCapacity = bytesToTeraBytes(
-          new BN(stakeLimit).divn(LIMIT_UINT)
+        new BN(stakeLimit).divn(LIMIT_UINT)
       );
 
       // 3. Calculate `validator_rate`
       const latestEra = currentEra;
       const validatorRate = this.getPercent(
-          validator.beValidatorEras,
-          latestEra - validator.effectiveEra + 1
+        validator.beValidatorEras,
+        latestEra - validator.effectiveEra + 1
       );
 
       // 4. Calculate `validator_multiplier`
       //    �The drop rate is the quotient of the number of dropped calls and the number of validator
-      const dropRate = Math.min(1, this.getPercent(
-          validator.offlineEras,
-          validator.beValidatorEras * 3
-      ));
+      const dropRate = Math.min(
+        1,
+        this.getPercent(validator.offlineEras, validator.beValidatorEras * 3)
+      );
       const validatorMultiplier = this.getValidatorMultiplier(dropRate);
 
       // 5. Calculate indicators
@@ -184,9 +198,9 @@ export default class NodeStatusService {
 
       // 6. Calculate points
       const points = this.getNodeSlotPoints(
-          totalCapacity,
-          behaviorIndicators,
-          reportMultiplier
+        totalCapacity,
+        behaviorIndicators,
+        reportMultiplier
       );
 
       // 7. Push stash points result
@@ -225,46 +239,52 @@ export default class NodeStatusService {
         // and set the total score to the current era score
         await this.saveUnCalPointsInCycle(minerPoint, flag.erasCycle);
         await db.pointsUpdateTotalPoints(
-            minerPoint._id,
-            minerPoint.points,
-            flag.erasCycle,
-            minerPoint.totalPoints
+          minerPoint._id,
+          minerPoint.points,
+          flag.erasCycle,
+          minerPoint.totalPoints
         );
-      };
+      }
       // The score of the node is counted and written into the reward table
-      await this.saveMinerCycleReward(flag.erasCycle, minerPoints, minersTotalPoints);
+      await this.saveMinerCycleReward(
+        flag.erasCycle,
+        minerPoints,
+        minersTotalPoints
+      );
       // Clear the flag of statistics from the beginning
       await db.flagsClear(flag._id, flag.erasCycle + 1, currentEra);
     } else {
       // If the condition of statistical reward is not met,
       // only countedEra needs to be accumulated
       // And update the latest statistics of era
-      await db.updateFlags(
-        flag._id,
-        nextCountedEras,
-        currentEra
-      );
+      await db.updateFlags(flag._id, nextCountedEras, currentEra);
     }
   }
 
   async saveUnCalPointsInCycle(minerPoints: any, currentCycle: number) {
-    let recordedCycle: number[] = [];
-    minerPoints.pointInCycle.forEach((e: { index: number; }) => recordedCycle.push(e.index));
-    if (recordedCycle.length < currentCycle-1) {
-      for (let i = 1; i < currentCycle; i ++) {
+    const recordedCycle: number[] = [];
+    minerPoints.pointInCycle.forEach((e: {index: number}) =>
+      recordedCycle.push(e.index)
+    );
+    if (recordedCycle.length < currentCycle - 1) {
+      for (let i = 1; i < currentCycle; i++) {
         if (recordedCycle.indexOf(i) === -1) {
           await db.pointsUpdateTotalPoints(
-              minerPoints._id,
-              minerPoints.points,
-              i,
-              0
+            minerPoints._id,
+            minerPoints.points,
+            i,
+            0
           );
         }
       }
     }
   }
 
-  async saveMinerCycleReward(erasCycle: number, minerPoints: any, minersPoints: number) {
+  async saveMinerCycleReward(
+    erasCycle: number,
+    minerPoints: any,
+    minersPoints: number
+  ) {
     const rewardRecord = this.erasRewards(minerPoints, minersPoints);
     await db.rewardSave(erasCycle, rewardRecord);
   }
@@ -285,7 +305,7 @@ export default class NodeStatusService {
   }
 
   private getValidatorMultiplier(dropRate: number) {
-    if (0 == dropRate) {
+    if (0 === dropRate) {
       return 0.1;
     } else if (0 < dropRate && dropRate <= 0.01) {
       return 0.0;
@@ -309,10 +329,12 @@ export default class NodeStatusService {
   }
 
   private getPercent(molecular: number, denominator: number) {
-    if (denominator == 0) {
+    if (denominator === 0) {
       return 0;
     } else {
-      return Math.round((molecular * 1.0 / denominator) * 100000000) / 100000000;
+      return (
+        Math.round(((molecular * 1.0) / denominator) * 100000000) / 100000000
+      );
     }
   }
 

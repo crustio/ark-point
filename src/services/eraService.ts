@@ -1,8 +1,8 @@
 import NodeStatusService from './nodeStatusService';
 import {EventDetails} from './eventService';
 import {parseObj} from '../util';
-import {logger} from "../log";
-import {flags} from "../db";
+import {logger} from '../log';
+import {flags} from '../db';
 
 export default class EraService {
   private readonly nss: NodeStatusService;
@@ -16,7 +16,7 @@ export default class EraService {
   async eraHandler(event: EventDetails) {
     const eventMethod = `${event.section}.${event.method}`;
     const currentEra = await this.nss.chainService.currentEra();
-    if (this.fetchedEra == 0) {
+    if (this.fetchedEra === 0) {
       const flag = await flags();
       this.fetchedEra = flag.latestEra;
     }
@@ -30,9 +30,11 @@ export default class EraService {
     }
 
     if (this.fetchedEra < currentEra) {
-      logger.info(`New era to upsert node list and update points ${currentEra}`)
+      logger.info(
+        `New era to upsert node list and update points ${currentEra}`
+      );
       this.fetchedEra = currentEra;
-      logger.info(`Go to update miner points at era: ${currentEra}`)
+      logger.info(`Go to update miner points at era: ${currentEra}`);
       const currentSlot = await this.nss.chainService.currentSlot();
       await this.nss.upsertValidatorsOrCandidates(currentEra, currentSlot);
       await this.nss.updateAllMinersPoints(currentEra, currentSlot);

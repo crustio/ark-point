@@ -1,3 +1,4 @@
+/* eslint-disable node/no-extraneous-import */
 import {ApiPromise, WsProvider} from '@polkadot/api';
 import {Header} from '@polkadot/types/interfaces';
 import {EventRecord, SignedBlock} from '@polkadot/types/interfaces';
