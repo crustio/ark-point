@@ -20,4 +20,4 @@ const minerPointsSchema = new Schema({
     point: Number,
 });
 
-export = mongoose.model('MinerPointsSchema', minerPointsSchema, 'minerPoints');
+export = mongoose.model('MinerPointsSchema', minerPointsSchema, 'MinerPoints');

@@ -1,5 +1,6 @@
 import {ReportStatusSchema} from "../model/schema";
 import {ReportStatus} from "../model/interface";
+import {parseObj} from "../util";
 
 export const queryReportStatusByController = async (controller: string) =>{
     return ReportStatusSchema.findOne({
@@ -7,8 +8,8 @@ export const queryReportStatusByController = async (controller: string) =>{
     }).exec();
 };
 
-export const saveNewReportStatus = async (reportStatus :ReportStatus) => {
-    const reportStatusSchema = new ReportStatusSchema(reportStatus);
+export const saveNewReportStatus = async (reportStatus: ReportStatus) => {
+    const reportStatusSchema = new ReportStatusSchema(parseObj(reportStatus));
     const reportStatusInDb = await queryReportStatusByController(reportStatus.controller);
     if (!reportStatusInDb) {
         reportStatusSchema.save();

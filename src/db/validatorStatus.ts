@@ -1,5 +1,6 @@
 import {ValidatorStatusSchema} from "../model/schema";
 import {ValidatorStatus} from "../model/interface";
+import {parseObj} from "../util";
 
 export const queryByStash = async (stashId: string) => {
     return ValidatorStatusSchema.findOne({
@@ -8,7 +9,7 @@ export const queryByStash = async (stashId: string) => {
 }
 
 export const saveNewValidatorStatus = async (validatorStatus: ValidatorStatus) => {
-    const validatorStatusSchema = new ValidatorStatusSchema(validatorStatus);
+    const validatorStatusSchema = new ValidatorStatusSchema(parseObj(validatorStatus));
     const validatorStatusInDb = await queryByStash(validatorStatus.stashId);
     if (!validatorStatusInDb) {
         validatorStatusSchema.save();

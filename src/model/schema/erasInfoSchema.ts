@@ -1,9 +1,8 @@
 import mongoose from '../../db/mongooseConf';
-import {stringify} from "querystring";
 
 const Schema = mongoose.Schema;
 
-// [RAW] miner points schema
+// [RAW] erasInfo schema
 const erasInfoSchema = new Schema({
     // eraIndex
     eraIndex: {type: Number, index: true, unique:true},
@@ -23,4 +22,4 @@ const erasInfoSchema = new Schema({
     }]
 });
 
-export = mongoose.model('ErasInfoSchema', erasInfoSchema, 'erasInfo');
+export = mongoose.model('ErasInfoSchema', erasInfoSchema, 'ErasInfo');
