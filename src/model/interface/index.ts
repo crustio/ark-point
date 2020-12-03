@@ -1,3 +1,5 @@
+import {EventRecord, Block} from '@polkadot/types/interfaces';
+
 export interface Miner {
     stash: string,
     capacity: number,
@@ -41,4 +43,10 @@ export interface ErasInfo {
 export interface Bonded {
     stash: string,
     controller: string
+}
+
+export interface BlockInfo {
+    blockNumber: number,
+    blockDetail: Block,
+    events: EventRecord[]
 }
