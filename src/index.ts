@@ -1,14 +1,13 @@
 import {argv} from 'process';
 import {logger} from './log';
 import express, {Request, Response} from 'express';
-import {ApiService, SubscriberService} from './services';
+import {SubscriberService} from './services';
 import {getApi, initApi} from './services/chainService';
 
 const app = express();
 
 const port = argv[2] || 3000;
 
-const apiService = new ApiService();
 let subscriberService: SubscriberService;
 
 const subscribeHead = () => {
