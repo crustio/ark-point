@@ -1,6 +1,6 @@
+/* eslint-disable node/no-extraneous-import */
 import {ApiPromise, WsProvider} from '@polkadot/api';
-import { BlockHash } from '@polkadot/types/interfaces';
-import { read } from 'fs';
+import {Header, BlockHash} from '@polkadot/types/interfaces';
 
 const types = {
   Address: 'AccountId',
@@ -96,6 +96,9 @@ const types = {
   },
 };
 
+/**
+ * Chain Api Accessor
+ */
 export default class Chain {
   private readonly api: ApiPromise;
 
@@ -103,37 +106,54 @@ export default class Chain {
     this.api = this.newChainApi(addr);
   }
 
+  /**
+   * Register a pubsub event, dealing with new block
+   * @param handler handling with new block
+   * @returns unsubscribe signal
+   * @throws ApiPromise error
+   */
+  async subscribeNewHeads(handler: (b: Header) => void) {
+    await this.api.isReady;
+    return await this.api.rpc.chain.subscribeNewHeads((head: Header) =>
+      handler(head)
+    );
+  }
+
+  /**
+   * Get full block info
+   * @param bh block hash
+   */
   async block(bh: BlockHash) {
-    const readyApi = await this.api.isReady;
-    const events = await readyApi.query.system.events.at(bh);
-    return await readyApi.rpc.chain.getBlock(bh);
+    await this.api.isReady;
+    return await this.api.rpc.chain.getBlock(bh);
   }
 
+  /**
+   * Get block hash
+   * @param bn block number
+   */
   async blockHash(bn: number) {
-    const readyApi = await this.api.isReady;
-    return await readyApi.rpc.chain.getBlockHash(bn);
+    await this.api.isReady;
+    return await this.api.rpc.chain.getBlockHash(bn);
   }
 
+  /**
+   * Get block events
+   * @param bh block hash
+   */
   async events(bh: BlockHash) {
-    const readyApi = await this.api.isReady;
-    return await readyApi.query.system.events.at(bh);
+    await this.api.isReady;
+    return await this.api.query.system.events.at(bh);
   }
 
-  async header() {
-    const readyApi = await this.api.isReady;
-    return await readyApi.rpc.chain.getHeader();
-  }
-
+  /**
+   * Get stash account id by controller id
+   * @param c controller account address
+   */
   async stash(c: string) {
-    const readyApi = await this.api.isReady;
-    const ledger = (await readyApi.query.staking.ledger(c)).unwrap();
+    await this.api.isReady;
+    const ledger = (await this.api.query.staking.ledger(c)).unwrap();
     return ledger.stash;
-  }
-
-  async blockAuthor(bh: BlockHash) {
-    const readyApi = await this.api.isReady;
-    const header = await readyApi.derive.chain.getHeader(bh);
-    return header?.author?.toString();
   }
 
   private newChainApi(addr: string): ApiPromise {
@@ -143,4 +163,3 @@ export default class Chain {
     });
   }
 }
-
