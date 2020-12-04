@@ -171,7 +171,7 @@ export const historyPubKeyReports = async (currentReportSlot: number) => {
   const results = await Events.aggregate([
     {
       $match: {
-        reportSlot: {$lt: currentReportSlot + 1, $gte: startSlot},
+        reportSlot: {$lte: currentReportSlot, $gte: startSlot},
         section: 'swork',
         method: 'WorksReportSuccess',
       },

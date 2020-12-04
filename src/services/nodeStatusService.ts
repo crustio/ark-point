@@ -90,7 +90,8 @@ export default class NodeStatusService {
   }
 
   public reportStatusUpdateMany = async (currentSlot: number) => {
-    const pubKeyReports = await db.historyPubKeyReports(currentSlot);
+    const ps = preSlot(currentSlot);
+    const pubKeyReports = await db.historyPubKeyReports(ps);
     const reportedPubKeys = pubKeyReports.map((pk: {_id: any}) => pk._id);
     await db.updateUnReportedPubKey(reportedPubKeys);
     for (const pubKeyReport of pubKeyReports) {
@@ -103,14 +104,14 @@ export default class NodeStatusService {
           await db.updateStatusAndEffectiveSlot(
             dbReportStatus._id,
             pubKeyReport.reportCount,
-            preSlot(currentSlot),
-            preSlot(currentSlot)
+            ps,
+            ps
           );
         } else {
           await db.reportedStatusUpdate(
             dbReportStatus._id,
             pubKeyReport.reportCount,
-            preSlot(currentSlot)
+            ps
           );
         }
       } else {
@@ -154,10 +155,10 @@ export default class NodeStatusService {
                 0
               );
           const totalReportCount = totalReportedSlotsBN / 300 + 1;
-          totalReportRate += this.getPercent(
-            pubKeyWorkReport.reportedCount,
-            totalReportCount
-          );
+          totalReportRate += Math.min(this.getPercent(
+              pubKeyWorkReport.reportedCount,
+              totalReportCount
+          ), 1) ;
         }
       }
       const reportRate = Math.min(
