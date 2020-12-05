@@ -309,9 +309,13 @@ export default class NodeStatusService {
     if (0 === dropRate) {
       return 0.1;
     } else if (0 < dropRate && dropRate <= 0.01) {
+      return 0.05;
+    } else if (0.01 < dropRate && dropRate <= 0.02) {
       return 0.0;
+    } else if (0.02 < dropRate && dropRate <= 0.03) {
+      return -0.05;
     } else {
-      return -0.2;
+      return -0.1;
     }
   }
 
