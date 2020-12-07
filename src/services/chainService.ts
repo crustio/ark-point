@@ -149,7 +149,7 @@ export default class ChainService {
    */
   async subscribeNewHeads(handler: (b: Header) => void) {
     await this.withApiReady();
-    return await this.api.rpc.chain.subscribeNewHeads((head: Header) =>
+    return await this.api.rpc.chain.subscribeFinalizedHeads((head: Header) =>
       handler(head)
     );
   }
