@@ -109,7 +109,7 @@ let api: ApiPromise = newApiPromise();
 
 function newApiPromise(): ApiPromise {
   return new ApiPromise({
-    provider: new WsProvider(process.argv[2] || 'ws://106.14.136.219:9944'),
+    provider: new WsProvider(process.argv[2] || 'ws://localhost:9944'),
     types,
   });
 }
