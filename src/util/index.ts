@@ -1,6 +1,6 @@
 /* eslint-disable node/no-extraneous-import */
 import BN from 'bn.js';
-const CRU_UINT = new BN('1000000000000');
+const MILLION_CRU_UINT = new BN('1000000000');
 
 export const parseObj = (obj: any) => {
   return JSON.parse(JSON.stringify(obj));
@@ -12,8 +12,8 @@ export const parseObj = (obj: any) => {
  */
 export const bytesToTeraBytes = (byteSize: BN) => {
   if (byteSize.isZero()) return 0;
-  byteSize = byteSize.div(CRU_UINT);
-  return byteSize.toNumber();
+  byteSize = byteSize.div(MILLION_CRU_UINT);
+  return byteSize.toNumber() / 1000.0;
 };
 
 export const preSlot = (currentSlot: number) => {
