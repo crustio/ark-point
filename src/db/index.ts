@@ -208,7 +208,8 @@ export const historyPubKeyReports = async (currentReportSlot: number) => {
       },
     },
   ])
-      .option({ allowDiskUse: true }).exec();
+    .option({allowDiskUse: true})
+    .exec();
   return results;
 };
 
