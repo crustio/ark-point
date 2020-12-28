@@ -7,6 +7,7 @@ import ChainService from './chainService';
 const MAX_RECORDED_ERAS = 240;
 const REWARD_PER_CYCLE = 75000;
 const LIMIT_UINT = 10;
+const ATTACK_THRESHOLD = 10;
 
 export default class NodeStatusService {
   readonly chainService: ChainService;
@@ -144,21 +145,29 @@ export default class NodeStatusService {
           accountPubKey.pubKey
         );
         if (pubKeyWorkReport && pubKeyWorkReport.reportedCount > 0) {
-          realPubKeyCount++;
-          const totalReportedSlotsBN = !pubKeyWorkReport.endedSlot
-            ? Math.max(
-                pubKeyWorkReport.reportedSlot - pubKeyWorkReport.effectiveSlot,
-                0
-              )
-            : Math.max(
+          if (pubKeyWorkReport.endedSlot) {
+            const totalReportedSlotsBN = Math.max(
                 pubKeyWorkReport.endedSlot - pubKeyWorkReport.effectiveSlot,
                 0
-              );
-          const totalReportCount = totalReportedSlotsBN / 300 + 1;
-          totalReportRate += Math.min(this.getPercent(
-              pubKeyWorkReport.reportedCount,
-              totalReportCount
-          ), 1) ;
+            );
+            const totalReportCount = totalReportedSlotsBN / 300 + 1;
+
+            if (totalReportCount > ATTACK_THRESHOLD) {
+              realPubKeyCount++;
+              totalReportRate += Math.min(this.getPercent(
+                  pubKeyWorkReport.reportedCount,
+                  totalReportCount
+              ), 1) ;
+            }
+          } else {
+            realPubKeyCount++;
+            const totalReportedSlotsBN =  Math.max(pubKeyWorkReport.reportedSlot - pubKeyWorkReport.effectiveSlot, 0);
+            const totalReportCount = totalReportedSlotsBN / 300 + 1;
+            totalReportRate += Math.min(this.getPercent(
+                pubKeyWorkReport.reportedCount,
+                totalReportCount
+            ), 1) ;
+          }
         }
       }
       const reportRate = Math.min(
